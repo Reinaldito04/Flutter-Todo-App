@@ -1,5 +1,7 @@
+import 'package:app/pages/Auth/Home/Tasks.dart';
 import 'package:flutter/material.dart';
 import 'package:app/pages/Auth/Home/Profile.dart'; // Importa la página Profile
+
 
 class HomePage extends StatefulWidget {
   @override
@@ -8,20 +10,21 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
+  PageController _pageController = PageController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    
-      body: IndexedStack(
-        index: _currentIndex,
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (int index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
         children: [
-          Center(
-            child: Text('Página de Inicio'),
-          ),
-          Center(
-            child: Text('Página de Búsqueda'),
-          ),
+          TasksPage(),
+          ProfilePage(),
           ProfilePage(), // Muestra la página Profile
         ],
       ),
@@ -45,9 +48,20 @@ class _HomePageState extends State<HomePage> {
         onTap: (int index) {
           setState(() {
             _currentIndex = index;
+            _pageController.animateToPage(
+              index,
+              duration: Duration(milliseconds: 300),
+              curve: Curves.ease,
+            );
           });
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 }
