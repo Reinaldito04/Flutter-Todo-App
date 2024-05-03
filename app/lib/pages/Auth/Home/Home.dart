@@ -1,3 +1,4 @@
+import 'package:app/pages/Auth/Home/Setting.dart';
 import 'package:app/pages/Auth/Home/Tasks.dart';
 import 'package:flutter/material.dart';
 import 'package:app/pages/Auth/Home/Profile.dart'; // Importa la página Profile
@@ -25,7 +26,7 @@ class _HomePageState extends State<HomePage> {
         children: [
           TasksPage(),
           ProfilePage(),
-          ProfilePage(), // Muestra la página Profile
+          SettingPAge(), // Muestra la página Profile
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -35,15 +36,16 @@ class _HomePageState extends State<HomePage> {
             label: 'Inicio',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Buscar',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Perfil',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Configuración',
+          ),
         ],
         currentIndex: _currentIndex,
+        elevation: 20,
         selectedItemColor: Colors.blue,
         onTap: (int index) {
           setState(() {

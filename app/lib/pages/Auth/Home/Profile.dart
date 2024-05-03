@@ -3,12 +3,12 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:async';
 import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
+
 class ProfilePage extends StatefulWidget {
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
-
-
 
 class _ProfilePageState extends State<ProfilePage> {
   final double coverHeight = 280;
@@ -18,20 +18,34 @@ class _ProfilePageState extends State<ProfilePage> {
   File? _imagen;
   final picker = ImagePicker();
 
-  Future getImage() async{
-    final pickerImage = await picker.pickImage(source: ImageSource.gallery) ;
+  String accessToken = '';
+  String nombreUsuario = '';
+  String foto = '';
+
+  Future getImage() async {
+    final pickerImage = await picker.pickImage(source: ImageSource.gallery);
 
     setState(() {
-      if (pickerImage != null){
+      if (pickerImage != null) {
         _imagen = File(pickerImage.path);
-
-      }
-      else{
+      } else {
         print('No se ha seleccionado ninguna imágen');
       }
     });
   }
- 
+ @override
+  void initState() {
+    super.initState();
+    obtenerDatosLocalmente();
+  }
+    Future<void> obtenerDatosLocalmente() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      accessToken = prefs.getString('access_token') ?? '';
+      nombreUsuario = prefs.getString('nombreUsuario') ?? '';
+      foto = prefs.getString('foto') ?? '';
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,7 +77,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
- Widget buildProfileImageWithCameraButton() {
+  Widget buildProfileImageWithCameraButton() {
     return Stack(
       children: [
         buildProfileImage(),
@@ -75,8 +89,8 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget buildContent() => Column(
         children: [
           const SizedBox(height: 10),
-          const Text(
-            "Reinaldo Bellorin",
+           Text(
+            nombreUsuario,
             style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
@@ -104,44 +118,46 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       );
 
- Widget buildProfileImage() {
-  return Container(
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      border: Border.all(
-        color: Colors.white,
-        width: 5.0, // Ancho del borde
+  Widget buildProfileImage() {
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.white,
+          width: 5.0, // Ancho del borde
+        ),
       ),
-    ),
-    child: CircleAvatar(
-      radius: profileHeight / 2,
-      backgroundColor: Colors.grey.shade800,
-      // Usa la imagen seleccionada si existe, de lo contrario, usa una imagen predeterminada
-      backgroundImage: _imagen != null ? FileImage(_imagen!) : AssetImage("assets/yo.jpg") as ImageProvider<Object>,
-    ),
-  );
-}
+      child: CircleAvatar(
+        radius: profileHeight / 2,
+        backgroundColor: Colors.grey.shade800,
+        // Usa la imagen seleccionada si existe, de lo contrario, usa una imagen predeterminada
+        backgroundImage: _imagen != null
+            ? FileImage(_imagen!)
+            : AssetImage("assets/yo.jpg") as ImageProvider<Object>,
+      ),
+    );
+  }
 
-Widget buildCameraButton() {
-  return Positioned(
-    bottom: 0,
-    right: 0,
-    left: 0, // Para centrar horizontalmente
-    child: Center(
-      child: FloatingActionButton(
-        elevation: 0, // Establecer la elevación a 0
-        onPressed: () {
-         getImage();
-        },
-        child: Icon(Icons.camera_alt, color: Colors.white),
-        backgroundColor: Colors.transparent,
-        splashColor: Colors.transparent,
-        hoverColor: Colors.transparent,
-        focusColor: Colors.transparent,
+  Widget buildCameraButton() {
+    return Positioned(
+      bottom: 0,
+      right: 0,
+      left: 0, // Para centrar horizontalmente
+      child: Center(
+        child: FloatingActionButton(
+          elevation: 0, // Establecer la elevación a 0
+          onPressed: () {
+            getImage();
+          },
+          child: Icon(Icons.camera_alt, color: Colors.white),
+          backgroundColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          focusColor: Colors.transparent,
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget buildCoverImage() => Container(
         color: Colors.grey,

@@ -1,6 +1,11 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:app/pages/Auth/Home/Home.dart';
 import 'package:app/pages/Auth/registro.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 final TextEditingController usuarioController = TextEditingController();
 final TextEditingController contrasenaController = TextEditingController();
@@ -14,17 +19,44 @@ class _LoginPageState extends State<LoginPage> {
   bool _showPassword =
       false; // Variable para controlar la visibilidad de la contraseña
 
-  void login() {
+    Future<void> sendPostRequest() async {
     String usuario = usuarioController.text;
     String password = contrasenaController.text;
-
-    if (usuario == "reinaldo" && password == "12345") {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+    
+    var url = Uri.parse('http://192.168.100.233:8000/login');
+    var data = {
+      'email': usuario,
+      "password": password,
+    };
+    var body = json.encode(data);
+    try{
+      var response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body,
+        
       );
-    } else {
-      showDialog(
+        if (response.statusCode ==200){
+          var responseData = jsonDecode(response.body);
+          var access_token= responseData["access_token"];
+          var nombreUsuario = responseData["Usuario"];
+          var foto = responseData["Foto"];
+
+
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+
+          await prefs.setString('access_token', access_token);
+          await prefs.setString('nombreUsuario', nombreUsuario);
+          await prefs.setString('foto', foto);
+          Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      }
+      else{
+        showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
@@ -41,7 +73,12 @@ class _LoginPageState extends State<LoginPage> {
           );
         },
       );
+      }
     }
+    catch(e){
+      print('Excepción durante la petición POST: $e');
+    }
+    
   }
 
   @override
@@ -138,7 +175,7 @@ class _LoginPageState extends State<LoginPage> {
                           padding: EdgeInsets.symmetric(horizontal: 20),
                           child: ElevatedButton(
                             onPressed: () {
-                              login();
+                              sendPostRequest();
                             },
                             style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blue,

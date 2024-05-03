@@ -1,6 +1,9 @@
+import 'package:app/pages/Auth/Home/Home.dart';
 import 'package:app/pages/Auth/login.dart';
 import 'package:app/pages/Auth/registro.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -34,6 +37,23 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   @override
+
+  void initState(){
+    super.initState();
+    verificarToken();
+  }
+  Future<void> verificarToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? accessToken = prefs.getString('access_token');
+    if (accessToken != null) {
+      // Si hay un token de acceso almacenado, redirige a la página de inicio
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
+    }
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
