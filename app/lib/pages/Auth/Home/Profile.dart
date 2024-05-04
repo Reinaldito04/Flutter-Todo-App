@@ -21,6 +21,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String accessToken = '';
   String nombreUsuario = '';
   String foto = '';
+  String email ='';
 
   Future getImage() async {
     final pickerImage = await picker.pickImage(source: ImageSource.gallery);
@@ -43,6 +44,7 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() {
       accessToken = prefs.getString('access_token') ?? '';
       nombreUsuario = prefs.getString('nombreUsuario') ?? '';
+      email = prefs.getString('email') ?? '';
       foto = prefs.getString('foto') ?? '';
     });
   }
@@ -95,7 +97,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const SizedBox(height: 8),
           Text(
-            "Hola vale",
+            email,
             style: TextStyle(fontSize: 20, color: Colors.black54),
           ),
           const SizedBox(

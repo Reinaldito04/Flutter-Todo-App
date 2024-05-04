@@ -6,21 +6,38 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 void main() {
+  
   runApp(const MyApp());
 }
 
+
+
+
+bool _isDarkMode = false;
+
+String theme='';
+
+void setTheme() {
+  // Aquí puedes definir la lógica para establecer el tema según el valor de la variable `theme`
+  if (theme == "claro") {
+    _isDarkMode = false; // Si el tema es claro, desactiva el modo oscuro
+  } else {
+    _isDarkMode = true; // De lo contrario, activa el modo oscuro
+  }
+}
 class MyApp extends StatelessWidget {
+  
   const MyApp({super.key});
+  
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    setTheme(); 
     return MaterialApp(
       title: 'Test',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      debugShowCheckedModeBanner: false,
+      theme: _isDarkMode ? ThemeData.dark() : ThemeData.light(),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
@@ -40,8 +57,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void initState(){
     super.initState();
+  
     verificarToken();
   }
+
+
   Future<void> verificarToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token');

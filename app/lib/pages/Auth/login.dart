@@ -41,15 +41,20 @@ class _LoginPageState extends State<LoginPage> {
         if (response.statusCode ==200){
           var responseData = jsonDecode(response.body);
           var access_token= responseData["access_token"];
-          var nombreUsuario = responseData["Usuario"];
+          var nombreUsuario = responseData["Usuario"];  
           var foto = responseData["Foto"];
+          var idUser =responseData['ID'];
+          
 
 
           SharedPreferences prefs = await SharedPreferences.getInstance();
-
+          await prefs.setString('email', usuario);
           await prefs.setString('access_token', access_token);
           await prefs.setString('nombreUsuario', nombreUsuario);
           await prefs.setString('foto', foto);
+          await prefs.setInt('ID', idUser);
+
+     
           Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => HomePage()),

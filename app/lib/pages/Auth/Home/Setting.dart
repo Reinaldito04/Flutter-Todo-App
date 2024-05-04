@@ -10,20 +10,40 @@ class SettingPAge extends StatefulWidget {
 }
 
 class _SettingPAgeState extends State<SettingPAge> {
-
-Future<void> eliminarToken() async {
+  Future<void> eliminarToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('access_token');
     Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MyHomePage(title: "home",)),
-      );
+      context,
+      MaterialPageRoute(
+          builder: (context) => MyHomePage(
+                title: "home",
+              )),
+    );
+  }
+
+  bool _isDarkMode = false;
+
+  void _toggleDarkMode(bool value) async {
+    setState(() {
+      _isDarkMode = value;
+    });
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (_isDarkMode){
+       await prefs.setString('tema', 'oscuro');
+       print (_isDarkMode);
+    }
+    else{
+      await prefs.setString('tema', 'claro');
+     
+    }
+   
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -41,10 +61,18 @@ Future<void> eliminarToken() async {
               ListTile(
                 title: Text('Notificaciones'),
                 trailing: Switch(
-                  value: true, // Cambia este valor según el estado de la preferencia
+                  value:
+                      true, // Cambia este valor según el estado de la preferencia
                   onChanged: (value) {
                     // Agrega aquí la lógica para cambiar el estado de la preferencia
                   },
+                ),
+              ),
+              ListTile(
+                title: Text('Tema'),
+                trailing: Switch(
+                  value: _isDarkMode,
+                  onChanged: _toggleDarkMode,
                 ),
               ),
               ListTile(
