@@ -1,17 +1,24 @@
 import 'package:app/pages/Auth/Home/Home.dart';
 import 'package:app/pages/Auth/login.dart';
 import 'package:app/pages/Auth/registro.dart';
+import 'package:app/services/notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
-void main() {
-  
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initNotification();
+
   runApp(const MyApp());
+  await _limpiarNotificacionMostrada();
 }
 
 
-
+Future<void> _limpiarNotificacionMostrada() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.remove('notificacionMostrada'); // Eliminar la variable local
+}
 
 bool _isDarkMode = false;
 

@@ -31,21 +31,26 @@ class _HomePageState extends State<HomePage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
+
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Inicio',
+            icon: Icon(Icons.home,size: 40,),
+
+            label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Perfil',
+            icon: Icon(Icons.person,size: 40,),
+            label: '',
+            
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Configuración',
+            icon: Icon(Icons.settings,size: 40,),
+            label: '',
           ),
         ],
         currentIndex: _currentIndex,
-        elevation: 20,
+        elevation: 0,
+        showUnselectedLabels: false,
+        showSelectedLabels: false,
         selectedItemColor: Colors.blue,
         onTap: (int index) {
           setState(() {
@@ -54,6 +59,7 @@ class _HomePageState extends State<HomePage> {
               index,
               duration: Duration(milliseconds: 300),
               curve: Curves.ease,
+
             );
           });
         },

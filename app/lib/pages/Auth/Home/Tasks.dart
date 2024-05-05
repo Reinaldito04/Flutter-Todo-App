@@ -4,7 +4,10 @@ import 'package:app/api/DeleteTask.dart' as eliminarTarea;
 import 'package:app/api/EditTask.dart';
 import 'package:app/api/TaskGet.dart';
 import 'package:app/api/TaskPost.dart';
+import 'package:app/services/notifications.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 import 'package:app/api/CompletedTask.dart' as completarTarea;
 
@@ -22,28 +25,47 @@ class _TasksPageState extends State<TasksPage> {
   @override
   void initState() {
     super.initState();
-    _fetchTasks();
+    _initNotificacionMostrada();
   }
+  bool _notificacionMostrada = false;
 
-  Future<void> _fetchTasks() async {
-    try {
-      TaskGet taskGet = TaskGet();
-      List<Task> fetchedTasks = await taskGet.fetchTasks();
-      setState(() {
-        tasks = fetchedTasks;
-        isLoading = false;
-        print("Se ha actualizado");
-      });
-    } catch (e) {
-      setState(() {
-        isError = true;
-        isLoading = false;
-        tasks =
-            []; // Asigna una lista vacía en caso de error al cargar las tareas
-      });
-      print('Error al obtener las tareas: $e');
+
+Future<void> _initNotificacionMostrada() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  setState(() {
+    _notificacionMostrada = prefs.getBool('notificacionMostrada') ?? false;
+  });
+  _fetchTasks();
+}
+
+
+ Future<void> _fetchTasks() async {
+  try {
+    TaskGet taskGet = TaskGet();
+    List<Task> fetchedTasks = await taskGet.fetchTasks();
+    setState(() {
+      tasks = fetchedTasks;
+      isLoading = false;
+      print("Se ha actualizado");
+    });
+    
+    // Si la notificación no se ha mostrado todavía, la mostramos
+    if (!_notificacionMostrada) {
+      await mostrarNotificacionTareaCercana(tasks);
+      _notificacionMostrada = true; // Marcar la notificación como mostrada
+      // Guardar el estado de _notificacionMostrada
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setBool('notificacionMostrada', true);
     }
+  } catch (e) {
+    setState(() {
+      isError = true;
+      isLoading = false;
+      tasks = [];
+    });
+    print('Error al obtener las tareas: $e');
   }
+}
 
   bool showCompletedTasks = false;
   TextEditingController _dateController = TextEditingController();

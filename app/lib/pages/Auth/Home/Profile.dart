@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:app/api/PhotoSend.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -25,10 +26,22 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future getImage() async {
     final pickerImage = await picker.pickImage(source: ImageSource.gallery);
-
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       if (pickerImage != null) {
         _imagen = File(pickerImage.path);
+         uploadImage(_imagen!, email).then((imageUrl) {
+        if (imageUrl != null) {
+          prefs.setString('foto', imageUrl);
+          // La imagen se ha subido correctamente, puedes usar la URL de la imagen según sea necesario
+          print('URL de la imagen subida: $imageUrl');
+          // Aquí puedes realizar más acciones con la URL de la imagen, como mostrarla en tu interfaz de usuario o guardarla en tu base de datos local
+        } else {
+          // Ocurrió un error al subir la imagen
+          print('Ocurrió un error al subir la imagen');
+        }
+      });
+          
       } else {
         print('No se ha seleccionado ninguna imágen');
       }
@@ -45,7 +58,7 @@ class _ProfilePageState extends State<ProfilePage> {
       accessToken = prefs.getString('access_token') ?? '';
       nombreUsuario = prefs.getString('nombreUsuario') ?? '';
       email = prefs.getString('email') ?? '';
-      foto = prefs.getString('foto') ?? '';
+      foto = prefs.getString('foto')?? 'https://www.iprcenter.gov/image-repository/blank-profile-picture.png/@@images/image.png';
     });
   }
   @override
@@ -98,7 +111,7 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 8),
           Text(
             email,
-            style: TextStyle(fontSize: 20, color: Colors.black54),
+            style: TextStyle(fontSize: 20, color: Color.fromARGB(136, 226, 223, 223)),
           ),
           const SizedBox(
             height: 16,
@@ -135,7 +148,7 @@ class _ProfilePageState extends State<ProfilePage> {
         // Usa la imagen seleccionada si existe, de lo contrario, usa una imagen predeterminada
         backgroundImage: _imagen != null
             ? FileImage(_imagen!)
-            : AssetImage("assets/yo.jpg") as ImageProvider<Object>,
+            : NetworkImage(foto) as ImageProvider<Object>,
       ),
     );
   }
