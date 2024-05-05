@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
           var responseData = jsonDecode(response.body);
           var access_token= responseData["access_token"];
           var nombreUsuario = responseData["Usuario"];  
-          var foto = responseData["Foto"];
+          var foto = responseData["Foto"] ?? "https://www.iprcenter.gov/image-repository/blank-profile-picture.png/@@images/image.png";
           var idUser =responseData['ID'];
           
 

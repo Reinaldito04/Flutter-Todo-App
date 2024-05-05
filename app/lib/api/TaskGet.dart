@@ -2,27 +2,47 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
-
 class TaskGet {
-
   Future<List<Task>> fetchTasks() async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      var email = prefs.get('email');
-      final String apiUrl = 'http://192.168.100.233:8000/tasks/get/${email}';
-      final response = await http.get(Uri.parse(apiUrl));
+  try {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var email = prefs.get('email');
+    final String userTasksUrl =
+        'http://192.168.100.233:8000/tasks/get/$email';
+    final String sharedTasksUrl =
+        'http://192.168.100.233:8000/tasks/shared/$email';
 
+    // Realizar dos solicitudes GET simultáneas
+    final userTasksFuture = http.get(Uri.parse(userTasksUrl));
+    final sharedTasksFuture = http.get(Uri.parse(sharedTasksUrl));
+
+    // Esperar a que ambas solicitudes se completen
+    final responses = await Future.wait([userTasksFuture, sharedTasksFuture]);
+
+    // Lista para almacenar todas las tareas
+    final List<Task> allTasks = [];
+
+    // Procesar cada respuesta
+    for (var response in responses) {
+      // Verificar si la respuesta es válida
       if (response.statusCode == 200) {
-        final List<dynamic> responseData = json.decode(response.body);
-        return responseData.map((taskJson) => Task.fromJson(taskJson)).toList();
-      } else {
-        throw Exception('Failed to load tasks');
+        // Convertir el cuerpo de la respuesta a datos JSON
+        final responseData = json.decode(response.body);
+
+        // Verificar si la respuesta contiene datos relevantes
+        if (responseData is List) {
+          // Mapear los datos a objetos Task y agregarlos a la lista de tareas
+          final tasks = responseData.map((taskJson) => Task.fromJson(taskJson)).toList();
+          allTasks.addAll(tasks);
+        }
       }
-    } catch (e) {
-      throw Exception('Failed to load tasks: $e');
     }
+
+    return allTasks;
+  } catch (e) {
+    throw Exception('Failed to load tasks: $e');
   }
+}
 }
 
 class Task {
@@ -31,6 +51,7 @@ class Task {
   String description;
   bool completed;
   String? fecha;
+  String? madeBy;
 
   Task({
     required this.id,
@@ -38,6 +59,7 @@ class Task {
     required this.description,
     required this.completed,
     this.fecha,
+    this.madeBy
   });
 
   factory Task.fromJson(Map<String, dynamic> json) {
@@ -47,6 +69,7 @@ class Task {
       description: json['description'],
       completed: json['completed'] == 1 ? true : false,
       fecha: json['date'] != null ? json['date'] : null,
+      madeBy: json['madeBy'] != null ? json['madeBy'] : "",
     );
   }
 }

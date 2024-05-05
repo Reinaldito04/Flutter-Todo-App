@@ -58,7 +58,8 @@ class _ProfilePageState extends State<ProfilePage> {
       accessToken = prefs.getString('access_token') ?? '';
       nombreUsuario = prefs.getString('nombreUsuario') ?? '';
       email = prefs.getString('email') ?? '';
-      foto = prefs.getString('foto')?? 'https://www.iprcenter.gov/image-repository/blank-profile-picture.png/@@images/image.png';
+      foto = prefs.getString('foto')?? '';
+      print ("foto : ${foto}");
     });
   }
   @override

@@ -2,12 +2,13 @@ import 'dart:async';
 
 import 'package:app/api/DeleteTask.dart' as eliminarTarea;
 import 'package:app/api/EditTask.dart';
+import 'package:app/api/SharedTask.dart';
 import 'package:app/api/TaskGet.dart';
 import 'package:app/api/TaskPost.dart';
 import 'package:app/services/notifications.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:app/api/CompletedTask.dart' as completarTarea;
 
@@ -27,45 +28,44 @@ class _TasksPageState extends State<TasksPage> {
     super.initState();
     _initNotificacionMostrada();
   }
+
   bool _notificacionMostrada = false;
 
-
-Future<void> _initNotificacionMostrada() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  setState(() {
-    _notificacionMostrada = prefs.getBool('notificacionMostrada') ?? false;
-  });
-  _fetchTasks();
-}
-
-
- Future<void> _fetchTasks() async {
-  try {
-    TaskGet taskGet = TaskGet();
-    List<Task> fetchedTasks = await taskGet.fetchTasks();
+  Future<void> _initNotificacionMostrada() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      tasks = fetchedTasks;
-      isLoading = false;
-      print("Se ha actualizado");
+      _notificacionMostrada = prefs.getBool('notificacionMostrada') ?? false;
     });
-    
-    // Si la notificación no se ha mostrado todavía, la mostramos
-    if (!_notificacionMostrada) {
-      await mostrarNotificacionTareaCercana(tasks);
-      _notificacionMostrada = true; // Marcar la notificación como mostrada
-      // Guardar el estado de _notificacionMostrada
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setBool('notificacionMostrada', true);
-    }
-  } catch (e) {
-    setState(() {
-      isError = true;
-      isLoading = false;
-      tasks = [];
-    });
-    print('Error al obtener las tareas: $e');
+    _fetchTasks();
   }
-}
+
+  Future<void> _fetchTasks() async {
+    try {
+      TaskGet taskGet = TaskGet();
+      List<Task> fetchedTasks = await taskGet.fetchTasks();
+      setState(() {
+        tasks = fetchedTasks;
+        isLoading = false;
+        print("Se ha actualizado");
+      });
+
+      // Si la notificación no se ha mostrado todavía, la mostramos
+      if (!_notificacionMostrada) {
+        await mostrarNotificacionTareaCercana(tasks);
+        _notificacionMostrada = true; // Marcar la notificación como mostrada
+        // Guardar el estado de _notificacionMostrada
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setBool('notificacionMostrada', true);
+      }
+    } catch (e) {
+      setState(() {
+        isError = true;
+        isLoading = false;
+        tasks = [];
+      });
+      print('Error al obtener las tareas: $e');
+    }
+  }
 
   bool showCompletedTasks = false;
   TextEditingController _dateController = TextEditingController();
@@ -211,44 +211,139 @@ Future<void> _initNotificacionMostrada() async {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(task.title),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  task.title,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.close),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Descripción: ${task.description}'),
-              Text(
-                  'Fecha límite: ${task.fecha}'), // Mostrar la fecha formateada
+              Flexible(
+                child: Text(
+                  'Descripción: ${task.description}',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Text('Fecha límite: ${task.fecha}'),
+            Text('Añadida por: ${task.madeBy?.isEmpty ?? true ? "Yo" : task.madeBy}'),
               // Agrega más información sobre la tarea según sea necesario
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                // Aquí puedes agregar la lógica para eliminar la tarea
-
-                eliminarTarea.DeleteTask().delete(task.id);
-                _fetchTasks();
-
-                Navigator.pop(context);
-              },
-              child: Text('Eliminar'),
-            ),
-            TextButton(
-              onPressed: () {
-                // Aquí puedes agregar la lógica para editar la tarea
-                Navigator.pop(context);
-                _showAddTaskModal(context, task: task);
-              },
-              child: Text('Editar'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Cerrar'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    // Aquí puedes agregar la lógica para eliminar la tarea
+                    eliminarTarea.DeleteTask().delete(task.id);
+                    _fetchTasks();
+                    Navigator.pop(context);
+                  },
+                  child: Text('Eliminar'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // Aquí puedes agregar la lógica para compartir la tarea
+                    Navigator.pop(context);
+                    _shareTask(context, task);
+                  },
+                  child: Text('Compartir'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // Aquí puedes agregar la lógica para editar la tarea
+                    Navigator.pop(context);
+                    _showAddTaskModal(context, task: task);
+                  },
+                  child: Text('Editar'),
+                ),
+              ],
             ),
             // Agrega más acciones según sea necesario, como editar, eliminar, etc.
+          ],
+        );
+      },
+    );
+  }
+
+  void _shareTask(BuildContext context, Task task) {
+    TextEditingController _emailController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Compartir tarea'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: 'Correo electrónico'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                // Obtener el correo electrónico ingresado
+                String email = _emailController.text;
+
+                // Verificar si el correo electrónico no está vacío
+                if (email.isNotEmpty) {
+                  try {
+                    // Compartir la tarea utilizando la clase SharedTask
+                    SharedTask sharedTask = SharedTask();
+                    await sharedTask.completarTarea(email, task.id);
+
+                    // Si no hubo errores, cerrar el cuadro de diálogo
+                    Navigator.pop(context);
+                  } catch (e) {
+                    // Manejar errores
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Error'),
+                          content: Text('Hubo un error al compartir la tarea.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: Text('Aceptar'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                }
+              },
+              child: Text('Compartir'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                    context); // Cerrar el cuadro de diálogo sin hacer nada
+              },
+              child: Text('Cancelar'),
+            ),
           ],
         );
       },
@@ -343,13 +438,11 @@ Future<void> _initNotificacionMostrada() async {
                         description.isNotEmpty &&
                         _dateController.text.isNotEmpty) {
                       // Instancia TaskPost para enviar la nueva tarea al servidor
-                      if (task ==null){
-                        _addTask(title, description);   
-                      }
-                      else{
+                      if (task == null) {
+                        _addTask(title, description);
+                      } else {
                         _editTarea(title, description, task.id);
                       }
-                      
                     } else {
                       // Si falta algún campo, muestra un diálogo de error
                       showDialog(
@@ -373,9 +466,8 @@ Future<void> _initNotificacionMostrada() async {
                     }
                   },
                   child: Text(
-                    task==null ?'Agregar':"Editar",
-                    
-                   ),
+                    task == null ? 'Agregar' : "Editar",
+                  ),
                 ),
               ],
             ),
@@ -422,17 +514,15 @@ Future<void> _initNotificacionMostrada() async {
     });
   }
 
-
- void _editTarea(String title, String description,int id) {
-    
+  void _editTarea(String title, String description, int id) {
     Task newTask = Task(
-      id:id,
+      id: id,
       title: title,
       description: description,
       completed: false,
       fecha: _dateController.text,
     );
-     EditTask().Edit(newTask, id).then((_) {
+    EditTask().Edit(newTask, id).then((_) {
       // Cuando la tarea se haya agregado exitosamente, actualiza la lista de tareas
       _fetchTasks(); // <-- Aquí se llama a _fetchTasks() para obtener las tareas actualizadas
       _dateController.text = '';
@@ -459,5 +549,4 @@ Future<void> _initNotificacionMostrada() async {
       );
     });
   }
-
 }
