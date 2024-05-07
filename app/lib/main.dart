@@ -5,15 +5,19 @@ import 'package:app/services/notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initNotification();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   runApp(const MyApp());
   await _limpiarNotificacionMostrada();
 }
-
 
 Future<void> _limpiarNotificacionMostrada() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -22,7 +26,7 @@ Future<void> _limpiarNotificacionMostrada() async {
 
 bool _isDarkMode = false;
 
-String theme='';
+String theme = '';
 
 void setTheme() {
   // Aquí puedes definir la lógica para establecer el tema según el valor de la variable `theme`
@@ -32,15 +36,14 @@ void setTheme() {
     _isDarkMode = true; // De lo contrario, activa el modo oscuro
   }
 }
+
 class MyApp extends StatelessWidget {
-  
   const MyApp({super.key});
-  
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    setTheme(); 
+    setTheme();
     return MaterialApp(
       title: 'Test',
       debugShowCheckedModeBanner: false,
@@ -61,13 +64,11 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   @override
-
-  void initState(){
+  void initState() {
     super.initState();
-  
+
     verificarToken();
   }
-
 
   Future<void> verificarToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

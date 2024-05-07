@@ -3,6 +3,8 @@ import 'dart:convert';
 
 import 'package:app/pages/Auth/Home/Home.dart';
 import 'package:app/pages/Auth/registro.dart';
+import 'package:app/services/AuthGoogle.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -236,9 +238,21 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             SizedBox(width: 20),
                             ElevatedButton.icon(
-                              onPressed: () {
-                                // Acción al presionar el botón
-                              },
+                              onPressed: () async {
+  // Acción al presionar el botón
+                            GoogleSignInService googleSignInService = GoogleSignInService();
+                            User? user = await googleSignInService.signInWithGoogle();
+                            if (user != null) {
+                              Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => HomePage()));
+                              // El usuario inició sesión correctamente, haz algo con el usuario
+                              print('Usuario ${user.displayName} ha iniciado sesión con Google');
+                            } else {
+                              // Hubo un error o el usuario canceló el inicio de sesión
+                              print('Error al iniciar sesión con Google');
+                            }
+                        },
                                 icon: Image.asset(
                               'assets/google.png', // Ruta de la imagen del icono de Google
                               width: 24, // Ancho del icono
