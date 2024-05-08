@@ -98,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Container(
                 height: 450, // Establece la altura deseada para la imagen
                 child: Image.asset(
-                  "assets/header.jpg",
+                  "assets/header.jpeg",
                   fit: BoxFit.fill,
                 ),
               ),
