@@ -1,7 +1,7 @@
 import 'package:http/http.dart' as http;
 
 class SharedTask {
-  Future<void> completarTarea(String email, int idTask) async {
+  Future<void> compartirTarea(String email, int idTask) async {
     try {
       final String apiUrl = 'http://192.168.100.233:8000/tasks/share/$idTask/$email';
       final response = await http.post(

@@ -219,26 +219,7 @@ Future<void> sendRegistro() async {
                     Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          ElevatedButton.icon(
-                            onPressed: () {},
-                            icon: Icon(
-                              Icons.facebook,
-                              color: Colors.blue, // Color del icono
-                            ),
-                            label: Text(
-                              "Facebook",
-                              style: TextStyle(
-                                color: Colors.blue,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                                disabledBackgroundColor: Colors.transparent,
-                                side: BorderSide(
-                                  color: Colors.blue,
-                                  width: 1,
-                                )),
-                          ),
-
+                          
                           ElevatedButton.icon(
                             onPressed: () async {
   // Acción al presionar el botón

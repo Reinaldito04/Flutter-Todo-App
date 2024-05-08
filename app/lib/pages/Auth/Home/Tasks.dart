@@ -5,8 +5,10 @@ import 'package:app/api/EditTask.dart';
 import 'package:app/api/SharedTask.dart';
 import 'package:app/api/TaskGet.dart';
 import 'package:app/api/TaskPost.dart';
+import 'package:app/api/VerifyRegister.dart';
 import 'package:app/services/notifications.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -205,81 +207,86 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   void _showTaskDetails(BuildContext context, Task task) {
-    // Formatear la fecha en el formato deseado
+  // Formatear la fecha en el formato deseado
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  task.title,
-                  overflow: TextOverflow.ellipsis,
-                ),
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                task.title,
+                overflow: TextOverflow.ellipsis,
               ),
-              IconButton(
-                icon: Icon(Icons.close),
+            ),
+            IconButton(
+              icon: Icon(Icons.close),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Flexible(
+              child: Text(
+                'Descripción: ${task.description}',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text('Fecha límite: ${task.fecha}'),
+            Text(
+              'Añadida por: ${task.madeBy?.isEmpty ?? true ? "Yo" : task.madeBy}'
+            ),
+            // Agregar notas o comentarios aquí
+
+            
+          ],
+        ),
+        actions: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              TextButton(
                 onPressed: () {
+                  // Aquí puedes agregar la lógica para eliminar la tarea
+                  eliminarTarea.DeleteTask().delete(task.id);
+                  _fetchTasks();
                   Navigator.pop(context);
                 },
+                child: Text('Eliminar'),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Aquí puedes agregar la lógica para compartir la tarea
+                  Navigator.pop(context);
+                  _shareTask(context, task);
+                },
+                child: Text('Compartir'),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Aquí puedes agregar la lógica para editar la tarea
+                  Navigator.pop(context);
+                  _showAddTaskModal(context, task: task);
+                },
+                child: Text('Editar'),
               ),
             ],
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Flexible(
-                child: Text(
-                  'Descripción: ${task.description}',
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Text('Fecha límite: ${task.fecha}'),
-            Text('Añadida por: ${task.madeBy?.isEmpty ?? true ? "Yo" : task.madeBy}'),
-              // Agrega más información sobre la tarea según sea necesario
-            ],
-          ),
-          actions: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    // Aquí puedes agregar la lógica para eliminar la tarea
-                    eliminarTarea.DeleteTask().delete(task.id);
-                    _fetchTasks();
-                    Navigator.pop(context);
-                  },
-                  child: Text('Eliminar'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    // Aquí puedes agregar la lógica para compartir la tarea
-                    Navigator.pop(context);
-                    _shareTask(context, task);
-                  },
-                  child: Text('Compartir'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    // Aquí puedes agregar la lógica para editar la tarea
-                    Navigator.pop(context);
-                    _showAddTaskModal(context, task: task);
-                  },
-                  child: Text('Editar'),
-                ),
-              ],
-            ),
-            // Agrega más acciones según sea necesario, como editar, eliminar, etc.
-          ],
-        );
-      },
-    );
-  }
+          // Agrega más acciones según sea necesario, como editar, eliminar, etc.
+        ],
+      );
+    },
+  );
+}
+
 
   void _shareTask(BuildContext context, Task task) {
     TextEditingController _emailController = TextEditingController();
@@ -307,12 +314,33 @@ class _TasksPageState extends State<TasksPage> {
                 // Verificar si el correo electrónico no está vacío
                 if (email.isNotEmpty) {
                   try {
-                    // Compartir la tarea utilizando la clase SharedTask
-                    SharedTask sharedTask = SharedTask();
-                    await sharedTask.completarTarea(email, task.id);
+                    bool isRegistered =
+                        await VerifyRegister().isUserRegistered(email);
+                    if (!isRegistered) {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text("El usuario no está registrado"),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: Text("Aceptar"),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    } else {
+                      SharedTask sharedTask = SharedTask();
+                      await sharedTask.compartirTarea(email, task.id);
+                      Navigator.pop(context);
+                    }
 
                     // Si no hubo errores, cerrar el cuadro de diálogo
-                    Navigator.pop(context);
+                    
                   } catch (e) {
                     // Manejar errores
                     showDialog(

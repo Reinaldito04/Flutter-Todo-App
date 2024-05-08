@@ -186,9 +186,9 @@ class _LoginPageState extends State<LoginPage> {
                             },
                             style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blue,
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 0, vertical: 10),
-                                minimumSize: Size(double.infinity, 50)),
+                                 padding:
+                                     EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+                               ),
                             child: Text(
                               "Iniciar Sesión",
                               style: TextStyle(
@@ -214,28 +214,7 @@ class _LoginPageState extends State<LoginPage> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                // Acción al presionar el botón
-                              },
-                              icon: Icon(
-                                Icons.facebook,
-                                color: Colors.blue, // Color del icono
-                              ),
-                              label: Text(
-                                "Facebook",
-                                style: TextStyle(
-                                  color: Colors.blue, // Color del texto
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                  disabledBackgroundColor: Colors
-                                      .transparent, // Color de fondo del botón
-                                  side: BorderSide(
-                                    color: Colors.blue,
-                                    width: 1,
-                                  )),
-                            ),
+                           
                             SizedBox(width: 20),
                             ElevatedButton.icon(
                               onPressed: () async {
