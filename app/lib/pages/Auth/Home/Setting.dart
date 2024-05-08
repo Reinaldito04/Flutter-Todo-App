@@ -1,4 +1,5 @@
 import 'package:app/main.dart';
+import 'package:app/services/AuthGoogle.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -30,15 +31,12 @@ class _SettingPAgeState extends State<SettingPAge> {
     });
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    if (_isDarkMode){
-       await prefs.setString('tema', 'oscuro');
-       print (_isDarkMode);
-    }
-    else{
+    if (_isDarkMode) {
+      await prefs.setString('tema', 'oscuro');
+      print(_isDarkMode);
+    } else {
       await prefs.setString('tema', 'claro');
-     
     }
-   
   }
 
   @override
@@ -102,8 +100,23 @@ class _SettingPAgeState extends State<SettingPAge> {
               ListTile(
                 title: Text('Cerrar Sesión'),
                 trailing: Icon(Icons.close),
-                onTap: () {
-                  eliminarToken();
+                onTap: () async {
+                  try {
+                    await GoogleSignInService().signOutFromGoogle();
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => MyHomePage(
+                                title: "Home",
+                              )),
+                    );
+                  } catch (e) {
+                    eliminarToken();
+                  }
+                  finally{
+                    eliminarToken();
+                  }
+
                   // Agrega aquí la navegación para ver la pantalla "Acerca de"
                 },
               ),

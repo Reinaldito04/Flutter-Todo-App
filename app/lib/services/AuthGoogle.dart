@@ -61,4 +61,22 @@ class GoogleSignInService {
     await prefs.setString('access_token', accessToken);
 
   }
+
+ Future<void> signOutFromGoogle() async {
+    try {
+      await googleSignIn.signOut(); // Cerrar sesión con Google
+      // Opcional: también puedes cerrar sesión en Firebase si lo deseas
+      // await _auth.signOut();
+      // Limpia los datos del usuario del almacenamiento local
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.remove('email');
+      await prefs.remove('nombreUsuario');
+      await prefs.remove('foto');
+      await prefs.remove('ID');
+      await prefs.remove('access_token');
+    } catch (error) {
+      print('Error al cerrar sesión con Google: $error');
+    }
+  }
+
 }
